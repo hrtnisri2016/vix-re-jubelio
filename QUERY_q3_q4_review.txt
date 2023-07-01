@@ -1,0 +1,40 @@
+CREATE TABLE q3_q4_review (
+	purchase_date DATE, 
+	purchase_month VARCHAR(10),
+	total_price BIGINT,
+	promo_status VARCHAR(25),
+	promo_code VARCHAR(20),
+	sales_after_promo BIGINT
+);
+
+INSERT INTO q3_q4_review (
+	purchase_date, 
+	purchase_month,
+	total_price,
+	promo_status,
+	promo_code,
+	sales_after_promo
+)
+SELECT 
+	s.purchase_date,
+	TO_CHAR(s.purchase_date, 'Month') AS purchase_month,
+	s.quantity * m.price AS total_price,
+	CASE 
+		WHEN s.promo_id = 0 THEN 'tidak menggunakan promo'
+		ELSE 'menggunakan promo'
+	END AS promo_status,
+	CASE
+		WHEN s.promo_id = 0 THEN ''
+		ELSE p.promo_name 
+	END AS promo_code,
+	CASE 
+		WHEN s.promo_id = 0 THEN s.quantity * m.price
+		ELSE (s.quantity * m.price) - p.price_deduction 
+	END AS sales_after_promo
+FROM sales_table AS s
+LEFT JOIN marketplace_table as m
+	ON s.item_id = m.item_id
+LEFT JOIN promo_code AS p
+	ON s.promo_id = p.promo_id
+WHERE purchase_date BETWEEN '2022-07-01' AND '2022-12-31'
+;
